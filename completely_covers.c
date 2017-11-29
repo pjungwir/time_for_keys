@@ -126,8 +126,6 @@ Datum completely_covers_transfn(PG_FUNCTION_ARGS)
   typcache = range_get_typcache(fcinfo, RangeTypeGetOid(current_range));
   range_deserialize(typcache, current_range, &current_start, &current_end, &current_empty);
 
-  // TODO: Deal with current empty/lower-infinite/upper-infinite (tests too)
-
   // ereport(NOTICE, (errmsg("current is [%ld, %ld)", DatumGetTimestampTz(current_start.val), DatumGetTimestampTz(current_end.val))));
 
   if (first_time) {
@@ -153,9 +151,11 @@ Datum completely_covers_transfn(PG_FUNCTION_ARGS)
   }
 
   // This check is why we set covered_to to 0 above on the first pass:
+  // Note this check will not check unsorted inputs in some cases:
+  //   - the inputs cover the target before we hit an out-of-order input.
   if (DatumGetTimestampTz(current_start.val) < state->covered_to) {
     // Right? Maybe this should be a warning....
-    ereport(ERROR, (errmsg("completely_covered first argument should not have overlaps")));
+    ereport(ERROR, (errmsg("completely_covered first argument should be sorted")));
   }
 
   if (current_end.infinite) {

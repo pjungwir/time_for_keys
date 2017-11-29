@@ -4,7 +4,11 @@ INSERT INTO shifts VALUES
   (1, 1, tstzrange('2017-11-27 06:00:00', '2017-11-27 12:00:00')),
   (1, 2, tstzrange('2017-11-27 12:00:00', '2017-11-27 17:00:00')),
   (2, 3, tstzrange('2017-11-27 06:00:00', '2017-11-27 12:00:00')),
-  (2, 4, tstzrange('2017-11-27 13:00:00', '2017-11-27 17:00:00'))
+  (2, 4, tstzrange('2017-11-27 13:00:00', '2017-11-27 17:00:00')),
+  (3, 5, tstzrange(null,                  '2017-11-27 12:00:00')),
+  (3, 5, tstzrange('2017-11-27 12:00:00', '2017-11-27 17:00:00')),
+  (4, 6, tstzrange('2017-11-27 06:00:00', '2017-11-27 12:00:00')),
+  (4, 7, tstzrange('2017-11-27 12:00:00', null))
 ;
 
 -- TRUE:
@@ -33,6 +37,26 @@ WHERE   job_id = 1;
 SELECT  completely_covers(valid_at, tstzrange('2017-11-27 08:00:00', '2017-11-27 14:00:00'))
 FROM    shifts
 WHERE   job_id = 1;
+
+-- an infinite start will cover a finite target:
+SELECT  completely_covers(valid_at, tstzrange('2017-11-27 06:00:00', '2017-11-27 17:00:00'))
+FROM    shifts
+WHERE   job_id = 3;
+
+-- an infinite start will cover an infinite target:
+SELECT  completely_covers(valid_at, tstzrange(NULL, '2017-11-27 17:00:00'))
+FROM    shifts
+WHERE   job_id = 3;
+
+-- an infinite end will cover a finite target:
+SELECT  completely_covers(valid_at, tstzrange('2017-11-27 06:00:00', '2017-11-27 17:00:00'))
+FROM    shifts
+WHERE   job_id = 4;
+
+-- an infinite end will cover an infinite target:
+SELECT  completely_covers(valid_at, tstzrange('2017-11-27 06:00:00', NULL))
+FROM    shifts
+WHERE   job_id = 4;
 
 -- FALSE:
 
@@ -76,6 +100,27 @@ SELECT  completely_covers(valid_at, tstzrange(NULL, NULL))
 FROM    shifts
 WHERE   job_id = 1;
 
+-- an infinite start will not cover a finite target if there is uncovered time at the end:
+SELECT  completely_covers(valid_at, tstzrange('2017-11-27 06:00:00', '2017-11-27 20:00:00'))
+FROM    shifts
+WHERE   job_id = 3;
+
+-- an infinite start will not cover an infinite target if there is uncovered time at the end:
+SELECT  completely_covers(valid_at, tstzrange(NULL, '2017-11-27 20:00:00'))
+FROM    shifts
+WHERE   job_id = 3;
+
+-- an infinite end will not cover a finite target if there is uncovered time at the beginning:
+SELECT  completely_covers(valid_at, tstzrange('2017-11-27 03:00:00', '2017-11-27 17:00:00'))
+FROM    shifts
+WHERE   job_id = 4;
+
+-- an infinite end will not cover an infinite target if there is uncovered time at the beginning:
+SELECT  completely_covers(valid_at, tstzrange('2017-11-27 03:00:00', NULL))
+FROM    shifts
+WHERE   job_id = 4;
+
+
 -- NULL:
 
 -- it is unknown when the target is null:
@@ -86,7 +131,7 @@ WHERE   job_id = 1;
 -- Errors:
 
 -- it fails if the input ranges go backwards:
-SELECT  completely_covers(valid_at, tstzrange('2017-11-27 06:00:00', '2017-11-27 17:00:00') ORDER BY worker_id DESC)
+SELECT  completely_covers(valid_at, tstzrange('2017-11-27 13:00:00', '2017-11-27 20:00:00') ORDER BY worker_id DESC)
 FROM    shifts
 WHERE   job_id = 1;
 

@@ -1,0 +1,4 @@
+comment = 'Tools for state-time temporal tables'
+default_version = '0.0.1'
+module_pathname = '$libdir/pgtemporal'
+relocatable = true

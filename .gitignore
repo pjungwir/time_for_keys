@@ -1,0 +1,10 @@
+*.s
+*.o
+*.so
+.*.swp
+.*.swo
+/pgtemporal*.zip
+/regression.diffs
+/regression.out
+/results
+/README.html

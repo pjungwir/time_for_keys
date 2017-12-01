@@ -1,4 +1,4 @@
 comment = 'Tools for state-time temporal tables'
 default_version = '0.0.1'
-module_pathname = '$libdir/pgtemporal'
+module_pathname = '$libdir/time_for_keys'
 relocatable = true

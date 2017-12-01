@@ -1,5 +1,5 @@
-pgtemporal
-==========
+time\_for\_keys
+===============
 
 temporal foreign key constraint
 -------------------------------
@@ -13,5 +13,3 @@ Also whenever `houses` is updated or deleted, we need to check all the `rooms` t
 
 If we have a method to validate one `room` record, we can use that in several of these cases.
 This will be [`rooms_house_id_is_covered.sql`].
-
-

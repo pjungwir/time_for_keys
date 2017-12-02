@@ -1,5 +1,3 @@
-CREATE EXTENSION pgtemporal;
-CREATE TABLE shifts (job_id INTEGER, worker_id INTEGER, valid_at tstzrange);
 INSERT INTO shifts VALUES
   (1, 1, tstzrange('2017-11-27 06:00:00', '2017-11-27 12:00:00')),
   (1, 2, tstzrange('2017-11-27 12:00:00', '2017-11-27 17:00:00')),
@@ -219,3 +217,4 @@ WHERE   job_id = 1;
 ERROR:  completely_covered first argument should be sorted
 -- TODO: handle an empty target range? e.g. [5, 5)
 -- Or maybe since that is a self-contradiction maybe ignore that case?
+DELETE FROM shifts;

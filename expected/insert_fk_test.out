@@ -30,22 +30,22 @@ DELETE FROM rooms;
 -- You can't insert a finite fk id not covered by any row
 INSERT INTO rooms VALUES (1, 7, tstzrange('2015-01-01', '2016-01-01'));
 ERROR:  Tried to insert 7 to rooms.house_id but couldn't find it in houses.id for all of [Thu Jan 01 00:00:00 2015 PST, Fri Jan 01 00:00:00 2016 PST)
-CONTEXT:  PL/pgSQL function tri_fkey_check(text,text,text,text,text,text,integer,tstzrange) line 19 at RAISE
+CONTEXT:  PL/pgSQL function tri_fkey_check(text,text,text,text,text,text,integer,tstzrange,boolean) line 25 at RAISE
 PL/pgSQL function tri_fkey_check_ins() line 25 at IF
 -- You can't insert a finite fk range not covered by any row
 INSERT INTO rooms VALUES (1, 1, tstzrange('1999-01-01', '2000-01-01'));
 ERROR:  Tried to insert 1 to rooms.house_id but couldn't find it in houses.id for all of [Fri Jan 01 00:00:00 1999 PST, Sat Jan 01 00:00:00 2000 PST)
-CONTEXT:  PL/pgSQL function tri_fkey_check(text,text,text,text,text,text,integer,tstzrange) line 19 at RAISE
+CONTEXT:  PL/pgSQL function tri_fkey_check(text,text,text,text,text,text,integer,tstzrange,boolean) line 25 at RAISE
 PL/pgSQL function tri_fkey_check_ins() line 25 at IF
 -- You can't insert a finite fk partially covered by one row
 INSERT INTO rooms VALUES (1, 1, tstzrange('2014-01-01', '2015-06-01'));
 ERROR:  Tried to insert 1 to rooms.house_id but couldn't find it in houses.id for all of [Wed Jan 01 00:00:00 2014 PST, Mon Jun 01 00:00:00 2015 PDT)
-CONTEXT:  PL/pgSQL function tri_fkey_check(text,text,text,text,text,text,integer,tstzrange) line 19 at RAISE
+CONTEXT:  PL/pgSQL function tri_fkey_check(text,text,text,text,text,text,integer,tstzrange,boolean) line 25 at RAISE
 PL/pgSQL function tri_fkey_check_ins() line 25 at IF
 -- You can't insert a finite fk partially covered by two rows
 INSERT INTO rooms VALUES (1, 1, tstzrange('2014-01-01', '2016-06-01'));
 ERROR:  Tried to insert 1 to rooms.house_id but couldn't find it in houses.id for all of [Wed Jan 01 00:00:00 2014 PST, Wed Jun 01 00:00:00 2016 PDT)
-CONTEXT:  PL/pgSQL function tri_fkey_check(text,text,text,text,text,text,integer,tstzrange) line 19 at RAISE
+CONTEXT:  PL/pgSQL function tri_fkey_check(text,text,text,text,text,text,integer,tstzrange,boolean) line 25 at RAISE
 PL/pgSQL function tri_fkey_check_ins() line 25 at IF
 -- You can insert an infinite fk exactly covered by one row
 INSERT INTO rooms VALUES (1, 3, tstzrange('2015-01-01', null));
@@ -62,22 +62,22 @@ DELETE FROM rooms;
 -- You can't insert an infinite fk id not covered by any row
 INSERT INTO rooms VALUES (1, 7, tstzrange('2015-01-01', null));
 ERROR:  Tried to insert 7 to rooms.house_id but couldn't find it in houses.id for all of [Thu Jan 01 00:00:00 2015 PST, <NULL>)
-CONTEXT:  PL/pgSQL function tri_fkey_check(text,text,text,text,text,text,integer,tstzrange) line 19 at RAISE
+CONTEXT:  PL/pgSQL function tri_fkey_check(text,text,text,text,text,text,integer,tstzrange,boolean) line 25 at RAISE
 PL/pgSQL function tri_fkey_check_ins() line 25 at IF
 -- You can't insert an infinite fk range not covered by any row
 INSERT INTO rooms VALUES (1, 1, tstzrange('2020-01-01', null));
 ERROR:  Tried to insert 1 to rooms.house_id but couldn't find it in houses.id for all of [Wed Jan 01 00:00:00 2020 PST, <NULL>)
-CONTEXT:  PL/pgSQL function tri_fkey_check(text,text,text,text,text,text,integer,tstzrange) line 19 at RAISE
+CONTEXT:  PL/pgSQL function tri_fkey_check(text,text,text,text,text,text,integer,tstzrange,boolean) line 25 at RAISE
 PL/pgSQL function tri_fkey_check_ins() line 25 at IF
 -- You can't insert an infinite fk partially covered by one row
 INSERT INTO rooms VALUES (1, 4, tstzrange(null, '2020-01-01'));
 ERROR:  Tried to insert 4 to rooms.house_id but couldn't find it in houses.id for all of [<NULL>, Wed Jan 01 00:00:00 2020 PST)
-CONTEXT:  PL/pgSQL function tri_fkey_check(text,text,text,text,text,text,integer,tstzrange) line 19 at RAISE
+CONTEXT:  PL/pgSQL function tri_fkey_check(text,text,text,text,text,text,integer,tstzrange,boolean) line 25 at RAISE
 PL/pgSQL function tri_fkey_check_ins() line 25 at IF
 -- You can't insert an infinite fk partially covered by two rows
 INSERT INTO rooms VALUES (1, 3, tstzrange('1990-01-01', null));
 ERROR:  Tried to insert 3 to rooms.house_id but couldn't find it in houses.id for all of [Mon Jan 01 00:00:00 1990 PST, <NULL>)
-CONTEXT:  PL/pgSQL function tri_fkey_check(text,text,text,text,text,text,integer,tstzrange) line 19 at RAISE
+CONTEXT:  PL/pgSQL function tri_fkey_check(text,text,text,text,text,text,integer,tstzrange,boolean) line 25 at RAISE
 PL/pgSQL function tri_fkey_check_ins() line 25 at IF
 DELETE FROM rooms;
 DELETE FROM houses;

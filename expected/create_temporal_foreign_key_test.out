@@ -64,33 +64,33 @@ DELETE FROM rooms;
 INSERT INTO rooms VALUES (1, 2, tstzrange('2015-01-01', '2016-01-01'));
 SELECT create_temporal_foreign_key('room_has_a_house', 'rooms', 'house_id', 'valid_at', 'houses', 'id', 'valid_at');
 ERROR:  Tried to insert 2 to rooms.house_id but couldn't find it in houses.id for all of [Thu Jan 01 00:00:00 2015 PST, Fri Jan 01 00:00:00 2016 PST)
-CONTEXT:  PL/pgSQL function tri_fkey_check(text,text,text,text,text,text,integer,tstzrange) line 19 at RAISE
+CONTEXT:  PL/pgSQL function tri_fkey_check(text,text,text,text,text,text,integer,tstzrange,boolean) line 25 at RAISE
 SQL statement "SELECT TRI_FKey_check(
       from_table, from_column, from_range_column,
       to_table,   to_column,   to_range_column,
-      fk_val, from_range)"
+      fk_val, from_range, false)"
 PL/pgSQL function create_temporal_foreign_key(text,text,text,text,text,text,text) line 88 at PERFORM
 DELETE FROM rooms;
 -- it fails on a table with a completely-uncovered foreign key
 INSERT INTO rooms VALUES (1, 1, tstzrange('2010-01-01', '2011-01-01'));
 SELECT create_temporal_foreign_key('room_has_a_house', 'rooms', 'house_id', 'valid_at', 'houses', 'id', 'valid_at');
 ERROR:  Tried to insert 1 to rooms.house_id but couldn't find it in houses.id for all of [Fri Jan 01 00:00:00 2010 PST, Sat Jan 01 00:00:00 2011 PST)
-CONTEXT:  PL/pgSQL function tri_fkey_check(text,text,text,text,text,text,integer,tstzrange) line 19 at RAISE
+CONTEXT:  PL/pgSQL function tri_fkey_check(text,text,text,text,text,text,integer,tstzrange,boolean) line 25 at RAISE
 SQL statement "SELECT TRI_FKey_check(
       from_table, from_column, from_range_column,
       to_table,   to_column,   to_range_column,
-      fk_val, from_range)"
+      fk_val, from_range, false)"
 PL/pgSQL function create_temporal_foreign_key(text,text,text,text,text,text,text) line 88 at PERFORM
 DELETE FROM rooms;
 -- it fails on a table with a partially-covered foreign key
 INSERT INTO rooms VALUES (1, 1, tstzrange('2015-01-01', '2018-01-01'));
 SELECT create_temporal_foreign_key('room_has_a_house', 'rooms', 'house_id', 'valid_at', 'houses', 'id', 'valid_at');
 ERROR:  Tried to insert 1 to rooms.house_id but couldn't find it in houses.id for all of [Thu Jan 01 00:00:00 2015 PST, Mon Jan 01 00:00:00 2018 PST)
-CONTEXT:  PL/pgSQL function tri_fkey_check(text,text,text,text,text,text,integer,tstzrange) line 19 at RAISE
+CONTEXT:  PL/pgSQL function tri_fkey_check(text,text,text,text,text,text,integer,tstzrange,boolean) line 25 at RAISE
 SQL statement "SELECT TRI_FKey_check(
       from_table, from_column, from_range_column,
       to_table,   to_column,   to_range_column,
-      fk_val, from_range)"
+      fk_val, from_range, false)"
 PL/pgSQL function create_temporal_foreign_key(text,text,text,text,text,text,text) line 88 at PERFORM
 DELETE FROM rooms;
 DELETE FROM rooms;

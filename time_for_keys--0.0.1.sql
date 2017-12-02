@@ -105,7 +105,7 @@ CREATE OR REPLACE FUNCTION
 TRI_FKey_check(
   from_table TEXT, fk_column TEXT, from_range_column TEXT,
   to_table TEXT,   pk_column TEXT, to_range_column TEXT,
-  fk_val INTEGER, from_range tstzrange)
+  fk_val INTEGER, from_range tstzrange, updating BOOLEAN)
 RETURNS BOOLEAN
 AS
 $$
@@ -126,10 +126,17 @@ BEGIN
     RETURN true;
   ELSE
     -- false or null both imply this:
-    RAISE EXCEPTION 'Tried to insert % to %.% but couldn''t find it in %.% for all of [%, %)',
-      fk_val::text, from_table, fk_column,
-      to_table, pk_column, lower(from_range)::text, upper(from_range)::text
-      USING ERRCODE = 23503;
+    IF updating THEN
+      RAISE EXCEPTION 'Tried to update to % in %.% but couldn''t find it in %.% for all of [%, %)',
+        fk_val::text, from_table, fk_column,
+        to_table, pk_column, lower(from_range)::text, upper(from_range)::text
+        USING ERRCODE = 23503;
+    ELSE
+      RAISE EXCEPTION 'Tried to insert % to %.% but couldn''t find it in %.% for all of [%, %)',
+        fk_val::text, from_table, fk_column,
+        to_table, pk_column, lower(from_range)::text, upper(from_range)::text
+        USING ERRCODE = 23503;
+    END IF;
   END IF;
 END;
 $$
@@ -167,7 +174,7 @@ BEGIN
     USING NEW INTO fk_val, from_range;
   IF TRI_FKey_check(from_table, fk_column, from_range_column,
                     to_table,   pk_column, to_range_column,
-                    fk_val, from_range) THEN
+                    fk_val, from_range, false) THEN
     RETURN NEW;
   ELSE
     -- Should have raised already:
@@ -210,7 +217,7 @@ BEGIN
     USING NEW INTO fk_val, from_range;
   IF TRI_FKey_check(from_table, fk_column, from_range_column,
                     to_table,   pk_column, to_range_column,
-                    fk_val, from_range) THEN
+                    fk_val, from_range, true) THEN
     RETURN NEW;
   ELSE
     -- Should have raised already:
@@ -566,7 +573,7 @@ BEGIN
     PERFORM TRI_FKey_check(
       from_table, from_column, from_range_column,
       to_table,   to_column,   to_range_column,
-      fk_val, from_range);
+      fk_val, from_range, false);
   END LOOP;
 
   -- TODO: Keep it in a catalog?

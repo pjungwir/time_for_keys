@@ -156,19 +156,20 @@ Datum completely_covers_transfn(PG_FUNCTION_ARGS)
   if (DatumGetTimestampTz(current_start.val) < state->covered_to) {
     // Right? Maybe this should be a warning....
     ereport(ERROR, (errmsg("completely_covered first argument should be sorted")));
+    // ereport(ERROR, (errmsg("completely_covered first argument should be sorted but got %ld after covering up to %ld", DatumGetTimestampTz(current_start.val), state->covered_to)));
   }
 
   if (current_end.infinite) {
     state->completely_covered = true;
     state->finished = true;
-    PG_RETURN_POINTER(state);
-  }
 
-  state->covered_to = DatumGetTimestampTz(current_end.val);
+  } else {
+    state->covered_to = DatumGetTimestampTz(current_end.val);
 
-  if (!state->target_end_unbounded && state->covered_to >= state->target_end) {
-    state->completely_covered = true;
-    state->finished = true;
+    if (!state->target_end_unbounded && state->covered_to >= state->target_end) {
+      state->completely_covered = true;
+      state->finished = true;
+    }
   }
 
   PG_RETURN_POINTER(state);

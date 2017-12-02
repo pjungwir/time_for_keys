@@ -7,7 +7,8 @@ REGRESS = init \
 					create_temporal_foreign_key_test \
 					delete_pk_test \
 					update_pk_test \
-					insert_fk_test update_fk_test
+					insert_fk_test \
+					update_fk_test
 OBJS = time_for_keys.o completely_covers.o $(WIN32RES)
 
 PG_CONFIG = pg_config

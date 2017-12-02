@@ -5,7 +5,7 @@ INSERT INTO houses VALUES
   (3, 100000, tstzrange('2014-01-01', '2015-01-01')),
   (3, 200000, tstzrange('2015-01-01', null))
 ;
--- RESTRICT
+-- ON DELETE RESTRICT
 SELECT create_temporal_foreign_key('room_has_a_house', 'rooms', 'house_id', 'valid_at', 'houses', 'id', 'valid_at');
  create_temporal_foreign_key 
 -----------------------------
@@ -60,14 +60,14 @@ DELETE FROM houses WHERE id = 3 and valid_at @> '2016-01-01'::timestamptz;
 ERROR:  Tried to delete 3 during [Thu Jan 01 00:00:00 2015 PST, <NULL>) from houses but there are overlapping references in rooms.house_id
 CONTEXT:  PL/pgSQL function tri_fkey_restrict_del() line 32 at RAISE
 DELETE FROM rooms;
--- NOACTION
+-- ON DELETE NOACTION
 -- (same behavior as RESTRICT, but different entry function so it should have separate tests)
 -- TODO: Write some tests against normal FKs just to see NOACTION vs RESTRICT
--- CASCADE
+-- ON DELETE CASCADE
 -- TODO
--- SET NULL
+-- ON DELETE SET NULL
 -- TODO
--- SET DEFAULT
+-- ON DELETE SET DEFAULT
 -- TODO
 DELETE FROM rooms;
 DELETE FROM houses;

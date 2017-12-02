@@ -5,7 +5,7 @@ INSERT INTO houses VALUES
   (3, 100000, tstzrange('2014-01-01', '2015-01-01')),
   (3, 200000, tstzrange('2015-01-01', null))
 ;
--- RESTRICT
+-- ON UPDATE RESTRICT
 SELECT create_temporal_foreign_key('room_has_a_house', 'rooms', 'house_id', 'valid_at', 'houses', 'id', 'valid_at');
  create_temporal_foreign_key 
 -----------------------------
@@ -105,9 +105,9 @@ UPDATE houses SET valid_at = tstzrange('2017-01-01', '2018-01-01') WHERE id = 3 
 ERROR:  Tried to update 3 during [Thu Jan 01 00:00:00 2015 PST, <NULL>) from houses but there are overlapping references in rooms.house_id
 CONTEXT:  PL/pgSQL function tri_fkey_restrict_upd() line 41 at RAISE
 DELETE FROM rooms;
--- NOACTION
+-- ON UPDATE NOACTION
 -- TODO
--- CASCADE
+-- ON UPDATE CASCADE
 -- TODO
 -- ON UPDATE SET NULL
 -- TODO

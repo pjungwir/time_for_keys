@@ -71,3 +71,4 @@ DELETE FROM rooms;
 
 DELETE FROM rooms;
 DELETE FROM houses;
+SELECT drop_temporal_foreign_key('room_has_a_house', 'rooms', 'houses');

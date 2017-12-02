@@ -355,7 +355,7 @@ BEGIN
     RETURN NEW;
   ELSE
     RAISE EXCEPTION 'Tried to update % during [%, %) from % but there are overlapping references in %.%',
-      old_pk_val, lower(old_pk_range), upper(old_pk_range), to_table, from_table, from_column
+      old_pk_val, lower(old_pk_range), upper(old_pk_range), to_table, from_table, fk_column
       USING ERRCODE = 23503;
   END IF;
 END;
@@ -454,7 +454,7 @@ BEGIN
     RETURN NEW;
   ELSE
     RAISE EXCEPTION 'Tried to update % during [%, %) from % but there are overlapping references in %.%',
-      old_pk_val, lower(old_pk_range), upper(old_pk_range), to_table, from_table, from_column
+      old_pk_val, lower(old_pk_range), upper(old_pk_range), to_table, from_table, fk_column
       USING ERRCODE = 23503;
   END IF;
 END;

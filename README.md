@@ -64,7 +64,7 @@ Usage
 
 You can create a new temporal foreign key using:
 
-`create_temporal_foreign_key(`*constraint-name*`, `*from-table*`, `*from-column*`, `*from-range-column*`, `*to-table*`, `*to-column*`, `*to-range-column*`)`
+`create_temporal_foreign_key(constraint_name, from_table, from_column, from_range_column, to_table, to_column, to_range_column)`
 
 For example:
 
@@ -76,7 +76,7 @@ For example:
 
 Later you can drop the constraint with:
 
-`drop_temporal_foreign_key(`*constraint-name*`, `*from-table*`, `*to-table*`)`
+`drop_temporal_foreign_key(constraint_name, from_table, to_table)`
 
 For example:
 

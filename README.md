@@ -32,6 +32,14 @@ but by the "sum" of them.
 This can't be expressed by regular foreign keys,
 so this extension adds constraints for it.
 
+For another perspective you could consult [the *Time for Keys* music video](https://www.youtube.com/watch?v=l1FrF2Rl8gc).
+These opening lines are pretty much foreign keys in a nutshell, right?:
+
+<i>I have to say</i><br/>
+<i>it's a world of us and them</i><br/>
+<i>and that when things go wrong</i><br/>
+<i>you won't accept the blame.</i><br/>
+
 
 Installing
 ----------

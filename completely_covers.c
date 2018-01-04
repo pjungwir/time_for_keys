@@ -29,10 +29,6 @@
 #include <catalog/pg_tablespace.h>
 #include <commands/tablespace.h>
 
-
-PG_MODULE_MAGIC;
-
-
 #include "completely_covers.h"
 
 typedef struct completely_covers_state {

@@ -1,0 +1,136 @@
+
+
+- LEARN:
+  - How do postgres foreign key triggers work
+    + all the cases
+    - how they handle failure
+
+
+- need to maintain a list of temporal foreign keys
+  - `_pg_temporal_fks`
+  - in the same schema as the extension?
+- need a function to add a new temporal FK:
+  - define the check function
+  - create a trigger (like normal FKs)
+    - check when fk+range is inserted
+    - check when fk+range is updated
+    - check when pk+range is updated
+    - check when pk+range is deleted
+    - call some functions that take the table/col names
+    - the trigger name should be unique and short,
+      maybe use the oids of the tables/cols.
+      Max length for a trigger name is 63 chars, like other identifiers.
+      We have 2 table names, at least 4 column names.
+      If oids are 6 digits each that is 36 chars,
+      plus separators and a prefix,
+      so plenty of room.
+      - For ON UPDATE SET x, where the pk and fk live in the same table
+        (like a tree structure),
+        see the note inside `CreateFKCheckTrigger` in `backend/commands/tablecmds.c`:
+        the update has to happen before the check,
+        so they name action triggers `RI_ConstraintTrigger_a_NNNN` 
+        and check triggers `RI_ConsraintTrigger_c_NNNN`.
+        Also I guess we should follow their pattern of giving the *trigger* an oid,
+        and looking up the table/column details from the catalog.
+        That makes the naming a lot simpler.
+      - in `backend/commands/trigger.c` see `CreateTrigger`:
+        it generates the `NNNN` to ensure uniqueness when isInternal is true.
+        It also marks the trigger as internal in the `pg_trigger` catalog.
+        It seems that if the constraint oid is 6010779,
+        then its triggers will be named `RI_ConstraintTrigger_a_6010780`,
+        `RI_ConstraintTrigger_a_6010781`, `RI_ConstraintTrigger_c_6010782`,
+        and `RI_ConstraintTrigger_c_6010783`.
+        The `NNNN` is the oid of the trigger itself (generated inside `CreateTrigger`).
+        I guess it is two triggers for the pk table and two for the fk table.
+        The type is always 9, 17, 5, 17, which is.....
+        *But* we won't have a constraint oid if we use `CREATE CONSTRAINT TRIGGER`.
+        We would only have one if we build constraint and trigger in C,
+        like the built-in foreign key constraints do.
+    - the trigger creation should check for the same permissions as creating a foreign key.
+
+    - If we use `CREATE CONSTRAINT TRIGGER` then that could just be the interface,
+      and we can use trigger params to give the table names, valid_at names, and pk/fk names.
+      We could have two versions: one where the pk/fk names are strings
+      and one where they are arrays (for multi-column FKs).
+      That sounds like the easiest path forward,
+      although doing everything in C would be cool to make it closer to a patch that could be accepted.
+      Probably best to start with something easier to finish though.
+      Oh also: The user would *not* type separate `CREATE CONSTRAINT TRIGGER` commands,
+      because there would be four for each FK, but we'd have a function that would create them for you.
+      -- TODO: Do I still need to use FOR KEY SHARE?
+
+  - make sure the FK is valid right now
+    - We're allowed to temporarily increase `work_mem` to `maintenance_work_mem` for this query,
+      following the example of the pg FK code.
+  - need to deal with table/columns getting renamed also. Hmm! The internal RI code listens for catalog updates; maybe we need to do that too.
+- need a function to drop a temporal FK:
+  - remove the check function
+  - remove the trigger
+  - delete the row from our catalog
+- when a table is dropped, drop its temporal FKs automatically
+
+- can we support ON DELETE CASCADE or ON DELETE SET NULL?
+
+- change `completely_covers` to support ranges of i2-i8, tstz, ts, maybe inet and uuid too.
+
+- `pg_temporal_pk`:
+  - function to add a temporal pk:
+    - adds the exclusion constraint
+    - adds a sequence and a default value on the column
+    - remembers the PK in our catalog
+  - function to drop a temporal pk:
+
+temporal foreign key constraint
+-------------------------------
+
+There isn't anything about this built-in, so we need to use triggers to check for it.
+Suppose tables `houses` and `rooms` where `rooms` has a `house_id` column that references `houses`.
+Whenever `rooms` is inserted or updated,
+we need to make sure that the corresponding record(s) from `houses` "cover" the duration of that record from `rooms`.
+
+Also whenever `houses` is updated or deleted, we need to check all the `rooms` that reference that house.
+
+If we have a method to validate one `room` record, we can use that in several of these cases.
+This will be [`rooms_house_id_is_covered.sql`].
+
+
+- TODO:
+  - Add support for CASCADE.
+  - Check NOACTION vs RESTRICT.
+  - Add KEY locks.
+  - Benchmark `completely_covers` vs Snodgrass.
+  - Add support for multi-column FKs.
+- Questions for the pg mailing list:
+  - Is temporal foreign keys an interesting feature?
+  - What are the advantages of moving all this to C?:
+    - I can cache the query plan for better performance.
+    - I can get less noisy error messages.
+    - I can support more types for the primary key and range columns.
+    - I can present the constraints as one thing instead of four.
+    - I can support constraints on columns with longer names.
+  - What are the tricky parts of moving all this to C?:
+    - Caching the query plans.
+    - Locking.
+
+- How does Postgres react now if?:
+  - The parent table is dropped: error, suggests using cascade.
+  - The parent table is dropped with cascade: works, FK is dropped
+  - The parent table is renamed: works, the FK references the new table. The FK's name is not changed.
+  - The parent column is dropped: error, suggests using cascade.
+  - The parent table is dropped with cascade: works, FK is dropped
+  - The parent column is renamed: works, the FK references the new column. The FK's name is not changed.
+  - The child table is dropped: works
+  - The child table is renamed: works
+  - The child column is dropped: works
+  - The child column is renamed: works
+- How do we react if?:
+  - The parent table is dropped:
+  - The parent table is dropped with cascade:
+  - The parent table is renamed:
+  - The parent column is dropped:
+  - The parent table is dropped with cascade:
+  - The parent column is renamed:
+  - The child table is dropped:
+  - The child table is renamed:
+  - The child column is dropped:
+  - The child column is renamed:

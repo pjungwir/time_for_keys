@@ -81,6 +81,20 @@ For each temporal foreign key we create four `CONSTRAINT TRIGGER`s that fire on:
   - child table `INSERT`s
   - child table `UPDATE`s
 
+If you drop or rename a table or column involved in a temporal foreign key relationship,
+you get the same behavior as if it were a regular foreign key:
+
+  - The parent table is dropped: error, suggests using `CASCADE`.
+  - The parent table is dropped with cascade: the constraints are dropped.
+  - The parent table is renamed: the constraints still work.
+  - Either parent column (id or range) is dropped: error, suggests using `CASCADE`.
+  - Either parent column is dropped with cascade: the constraints are dropped.
+  - Either parent column is renamed: the constraints still work.
+  - The child table is dropped: the constraints are dropped.
+  - The child table is renamed: the constraints still work.
+  - Either child column is dropped: the constraints are dropped.
+  - Either child column is renamed: the constraints still work.
+
 
 TODO
 ----
@@ -97,6 +111,7 @@ There are lots of ways to extend this work:
 - Benchmark against the traditional Snodgrass approach (nested `NOT EXISTS`).
 - Save the query plans for our queries, like in `backend/utils/adt/ri_triggers.c`?
 - Use `_PG_init` to set up caches like the [`temporal` extension](https://github.com/arkhipov/temporal_tables).?
+- Improve the failure message so you don't see a backtrace down into our own implementation. We'd need to rewrite in C for this.
 - The built-in FK code adds collation operators if the columns' collation isn't the same. We probably need to do something like that too.
 - Support temporal FKs on views? Probably not....
 

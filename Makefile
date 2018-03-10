@@ -8,7 +8,8 @@ REGRESS = init \
 					delete_pk_test \
 					update_pk_test \
 					insert_fk_test \
-					update_fk_test
+					update_fk_test \
+					ddl_test
 OBJS = time_for_keys.o completely_covers.o $(WIN32RES)
 
 PG_CONFIG = pg_config

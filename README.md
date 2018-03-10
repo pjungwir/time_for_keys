@@ -7,11 +7,11 @@ like described in [Snodgrass 127&ndash;130](https://www2.cs.arizona.edu/~rts/pub
 
 We focus on *valid-time* (aka state-time) tables, not transaction-time (aka system-time) tables,
 although these keys should work in either case.
-In other words these keys are for when you want a history of some *thing*.
+In other words our keys are for when you want a history of some *thing*.
 If you want a history of the *database*, e.g. for auditing,
-the [temporal tables extension](https://pgxn.org/dist/temporal_tables/)
+Vlad Arkhipov's [temporal tables extension](https://pgxn.org/dist/temporal_tables/)
 will automatically preserve that history.
-Since the history is automatically-generated there is less need for foreign keys.
+Since it is automatically-generated there is less need for foreign keys.
 I haven't yet considered referential integrity on bi-temporal tables,
 although if you want that let me know. :-)
 
@@ -31,6 +31,16 @@ and if the room didn't change then its foreign key is not satisfied by any one h
 but by the "sum" of them.
 This can't be expressed by regular foreign keys,
 so this extension adds constraints for it.
+
+I wrote a [temporal tables annotated bibliography](https://illuminatedcomputing.com/posts/2017/12/temporal-databases-bibliography/) if you are interested in learning more about them.
+
+For another perspective you could consult [the *Time for Keys* music video](https://www.youtube.com/watch?v=l1FrF2Rl8gc).
+These opening lines are pretty much foreign keys in a nutshell, right?:
+
+<i>I have to say</i><br/>
+<i>it's a world of us and them</i><br/>
+<i>and that when things go wrong</i><br/>
+<i>you won't accept the blame.</i><br/>
 
 
 Installing
@@ -54,7 +64,7 @@ Usage
 
 You can create a new temporal foreign key using:
 
-`create_temporal_foreign_key(`*constraint-name*`, `*from-table*`, `*from-column*`, `*from-range-column*`, `*to-table*`, `*to-column*`, `*to-range-column*`)`
+`create_temporal_foreign_key(constraint_name, from_table, from_column, from_range_column, to_table, to_column, to_range_column)`
 
 For example:
 
@@ -66,7 +76,7 @@ For example:
 
 Later you can drop the constraint with:
 
-`drop_temporal_foreign_key(`*constraint-name*`, `*from-table*`, `*to-table*`)`
+`drop_temporal_foreign_key(constraint_name, from_table, to_table)`
 
 For example:
 

@@ -18,6 +18,11 @@ RETURNS boolean
 AS 'time_for_keys', 'completely_covers_finalfn'
 LANGUAGE c;
 
+/*
+ * completely_covers(period tstzrange, target tstzrange) -
+ * Returns true if the fixed arg `target`
+ * is completely covered by the sum of the `period` values.
+ */
 CREATE AGGREGATE completely_covers(tstzrange, tstzrange) (
   sfunc = completely_covers_transfn,
   stype = internal,
@@ -505,6 +510,7 @@ BEGIN
   EXECUTE format($q$
     CREATE CONSTRAINT TRIGGER %1$s
     AFTER DELETE ON %2$s
+    DEFERRABLE INITIALLY DEFERRED
     FOR EACH ROW EXECUTE PROCEDURE TRI_FKey_restrict_del(%3$s, %4$s, %5$s, %6$s, %7$s, %8$s)
     $q$,
     quote_ident(concat('TRI_ConstraintTrigger_a_', constraint_name, '_del')),
@@ -521,6 +527,7 @@ BEGIN
   EXECUTE format($q$
     CREATE CONSTRAINT TRIGGER %1$s
     AFTER UPDATE ON %2$s
+    DEFERRABLE INITIALLY DEFERRED
     FOR EACH ROW EXECUTE PROCEDURE TRI_FKey_restrict_upd(%3$s, %4$s, %5$s, %6$s, %7$s, %8$s)
     $q$,
     quote_ident(concat('TRI_ConstraintTrigger_a_', constraint_name, '_upd')),
@@ -536,6 +543,7 @@ BEGIN
   EXECUTE format($q$
     CREATE CONSTRAINT TRIGGER %1$s
     AFTER INSERT ON %2$s
+    DEFERRABLE INITIALLY DEFERRED
     FOR EACH ROW EXECUTE PROCEDURE TRI_FKey_check_ins(%3$s, %4$s, %5$s, %6$s, %7$s, %8$s)
     $q$,
     quote_ident(concat('TRI_ConstraintTrigger_c_', constraint_name, '_ins')),
@@ -551,6 +559,7 @@ BEGIN
   EXECUTE format($q$
     CREATE CONSTRAINT TRIGGER %1$s
     AFTER UPDATE ON %2$s
+    DEFERRABLE INITIALLY DEFERRED
     FOR EACH ROW EXECUTE PROCEDURE TRI_FKey_check_upd(%3$s, %4$s, %5$s, %6$s, %7$s, %8$s)
     $q$,
     quote_ident(concat('TRI_ConstraintTrigger_c_', constraint_name, '_upd')),

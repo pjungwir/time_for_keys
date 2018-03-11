@@ -10,11 +10,11 @@ CREATE TABLE houses (
   id INTEGER,
   assessment FLOAT,
   valid_at tstzrange,
-  EXCLUDE USING gist (id WITH =, valid_at WITH &&)
+  CONSTRAINT tpk_houses_id EXCLUDE USING gist (id WITH =, valid_at WITH &&) DEFERRABLE INITIALLY IMMEDIATE
 );
 CREATE TABLE rooms (
   id INTEGER,
   house_id INTEGER,
   valid_at tstzrange,
-  EXCLUDE USING gist (id WITH =, valid_at WITH &&)
+  CONSTRAINT tpk_rooms_id EXCLUDE USING gist (id WITH =, valid_at WITH &&) DEFERRABLE INITIALLY IMMEDIATE
 );

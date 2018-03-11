@@ -142,31 +142,103 @@ COMMIT;
 BEGIN;
 SET CONSTRAINTS tpk_houses_id DEFERRED;
 UPDATE  houses
-SET     valid_at = tstzrange('2016-06-01', '2017-01-01')
-WHERE   id = 1 AND lower(valid_at) = '2016-01-01'
+SET     valid_at = tstzrange('2016-09-01', '2017-01-01')
+WHERE   id = 1 AND lower(valid_at) = '2016-06-01'
 ;
 UPDATE  houses
-SET     valid_at = tstzrange('2015-01-01', '2016-06-01')
+SET     valid_at = tstzrange('2015-01-01', '2016-09-01')
 WHERE   id = 1 AND lower(valid_at) = '2015-01-01'
 ;
 COMMIT;
 -- 2. Small shift to an earlier time
--- 2.1 Small shift to an earlier time, earlier first.
--- TODO
--- 2.2 Small shift to an earlier time, later first.
+-- 2.1 Small shift to an earlier time, moving both ranges at once:
+DELETE FROM rooms;
+DELETE FROM houses;
+INSERT INTO houses VALUES 
+  (1, 150000, tstzrange('2015-01-01', '2016-01-01')),
+  (1, 200000, tstzrange('2016-01-01', '2017-01-01'))
+;
+INSERT INTO rooms VALUES
+  (1, 1, tstzrange('2015-01-01', '2017-01-01'))
+;
+UPDATE  houses
+SET     valid_at =
+          CASE
+          WHEN lower(valid_at) = '2015-01-01' THEN tstzrange('2015-01-01', '2015-06-01')
+          WHEN lower(valid_at) = '2016-01-01' THEN tstzrange('2015-06-01', '2017-01-01')
+          ELSE NULL -- Can't RAISE here but NULL will cause it to fail.
+          END
+WHERE   id = 1
+;
+-- 2.2 Small shift to an earlier time, moving the earlier range first:
+DELETE FROM rooms;
+DELETE FROM houses;
+INSERT INTO houses VALUES 
+  (1, 150000, tstzrange('2015-01-01', '2016-01-01')),
+  (1, 200000, tstzrange('2016-01-01', '2017-01-01'))
+;
+INSERT INTO rooms VALUES
+  (1, 1, tstzrange('2015-01-01', '2017-01-01'))
+;
+-- 
+-- 2.2.1. You can't move the time in two transactions.
+-- 
+UPDATE  houses
+SET     valid_at = tstzrange('2015-01-01', '2015-06-01')
+WHERE   id = 1 AND lower(valid_at) = '2015-01-01'
+;
+ERROR:  Tried to update 1 during [Thu Jan 01 00:00:00 2015 PST, Fri Jan 01 00:00:00 2016 PST) from houses but there are overlapping references in rooms.house_id
+CONTEXT:  PL/pgSQL function tri_fkey_restrict_upd() line 41 at RAISE
+UPDATE  houses
+SET     valid_at = tstzrange('2015-06-01', '2017-01-01')
+WHERE   id = 1 AND lower(valid_at) = '2016-01-01'
+;
+ERROR:  conflicting key value violates exclusion constraint "tpk_houses_id"
+DETAIL:  Key (id, valid_at)=(1, ["Mon Jun 01 00:00:00 2015 PDT","Sun Jan 01 00:00:00 2017 PST")) conflicts with existing key (id, valid_at)=(1, ["Thu Jan 01 00:00:00 2015 PST","Fri Jan 01 00:00:00 2016 PST")).
+-- 
+-- 2.2.2. When the exclusion constraint is checked immediately,
+--        you can move the time in one transaction with two statements.
+-- 
+BEGIN;
+SET CONSTRAINTS tpk_houses_id IMMEDIATE;
+UPDATE  houses
+SET     valid_at = tstzrange('2015-01-01', '2015-06-01')
+WHERE   id = 1 AND lower(valid_at) = '2015-01-01'
+;
+UPDATE  houses
+SET     valid_at = tstzrange('2015-06-01', '2017-01-01')
+WHERE   id = 1 AND lower(valid_at) = '2016-01-01'
+;
+COMMIT;
+-- 
+-- 2.2.3. When the exclusion constraint is checked deferred,
+--        you can move the time in one transaction with two statements.
+-- 
+BEGIN;
+SET CONSTRAINTS tpk_houses_id DEFERRED;
+UPDATE  houses
+SET     valid_at = tstzrange('2015-01-01', '2015-03-01')
+WHERE   id = 1 AND lower(valid_at) = '2015-01-01'
+;
+UPDATE  houses
+SET     valid_at = tstzrange('2015-03-01', '2017-01-01')
+WHERE   id = 1 AND lower(valid_at) = '2015-06-01'
+;
+COMMIT;
+-- 2.3 Small shift to an earlier time, moving the later range first:
 -- TODO
 -- 3. Large shift to a later time (all the way past the later range)
--- 3.1. Large shift to a later time (all the way past the later range), earlier first.
+-- 3.1. Large shift to a later time (all the way past the later range), earlier first:
 -- TODO
--- 3.2. Large shift to a later time (all the way past the later range), later first.
+-- 3.2. Large shift to a later time (all the way past the later range), later first:
 -- TODO
 -- 4. Large shift to an earlier time (all the way past the earlier range)
--- 4.1. Large shift to an earlier time (all the way past the earlier range), earlier first.
+-- 4.1. Large shift to an earlier time (all the way past the earlier range), earlier first:
 -- TODO
--- 4.2. Large shift to an earlier time (all the way past the earlier range), later first.
+-- 4.2. Large shift to an earlier time (all the way past the earlier range), later first:
 -- TODO
 -- 5. Swap the ranges
--- 5.1. Swap the ranges, earlier first.
+-- 5.1. Swap the ranges, earlier first:
 -- TODO
--- 5.2. Swap the ranges, later first.
+-- 5.2. Swap the ranges, later first:
 -- TODO
